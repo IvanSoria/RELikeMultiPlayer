@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "RELikeMultiPlayerGameMode.h"
-#include "RELikeMultiPlayerCharacter.h"
+#include "../../Player/Character/RELikeMultiPlayerCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 

@@ -11,6 +11,12 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "OnlineSessionSettings.h"
+#include "../../Components/Inventory/InventoryComponent.h"
+#include "../../Components/Health/HealthComponent.h"
+#include "../../Components/Stamina/StaminaComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Components/Widget.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -57,6 +63,15 @@ ARELikeMultiPlayerCharacter::ARELikeMultiPlayerCharacter() //:
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	// Create inventory component
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+
+	// Create health component
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	// Create stamina component
+	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -121,6 +136,13 @@ void ARELikeMultiPlayerCharacter::SetupPlayerInputComponent(class UInputComponen
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &ARELikeMultiPlayerCharacter::CrouchStart);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &ARELikeMultiPlayerCharacter::CrouchEnd);
 
+		// Sprinting
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &ARELikeMultiPlayerCharacter::SprintStart);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ARELikeMultiPlayerCharacter::SprintEnd);
+
+		// Open Inventory
+		EnhancedInputComponent->BindAction(OpenInventoryAction, ETriggerEvent::Triggered, this, &ARELikeMultiPlayerCharacter::OpenInventory);
+			
 	}
 }
 
@@ -190,4 +212,76 @@ void ARELikeMultiPlayerCharacter::CrouchEnd()
 
 
 
+}
+
+void ARELikeMultiPlayerCharacter::SprintStart()
+{
+	//check to see GEngine is not a null pointer
+	TObjectPtr<UEngine> myEngine = GEngine;
+	if(!ensure(myEngine != nullptr)) return;
+
+	if(StaminaComponent->CanSprint())
+	{
+		myEngine->AddOnScreenDebugMessage(14, 5.f, FColor::Green, TEXT("Sprint Start"));
+	}
+}
+
+void ARELikeMultiPlayerCharacter::SprintEnd()
+{
+	//check to see GEngine is not a null pointer
+	TObjectPtr<UEngine> myEngine = GEngine;
+	if(!ensure(myEngine != nullptr)) return;
+
+	if(!StaminaComponent->CanSprint())
+	{
+		myEngine->AddOnScreenDebugMessage(15, 5.f, FColor::Red, TEXT("Sprint End"));
+	}
+}
+
+void ARELikeMultiPlayerCharacter::OpenInventory()
+{
+    // Only local player can open inventory
+    if (!IsLocallyControlled()) return;
+
+    APlayerController* PC = Cast<APlayerController>(Controller);
+    if (!PC) return;
+
+    if (!bIsInventoryOpen)
+    {
+        // Create widget if it doesn't exist
+        if (!InventoryWidget && InventoryWidgetClass)
+        {
+            InventoryWidget = CreateWidget<UUserWidget>(PC, InventoryWidgetClass);
+        }
+
+        // Show inventory
+        if (InventoryWidget)
+        {
+            InventoryWidget->AddToViewport();
+            
+            // Set input mode to UI
+            FInputModeGameAndUI InputMode;
+            InputMode.SetWidgetToFocus(InventoryWidget->TakeWidget());
+            InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+            PC->SetInputMode(InputMode);
+            PC->bShowMouseCursor = true;
+            
+            bIsInventoryOpen = true;
+        }
+    }
+    else
+    {
+        // Hide inventory
+        if (InventoryWidget)
+        {
+            InventoryWidget->RemoveFromParent();
+            
+            // Set input mode back to game
+            FInputModeGameOnly InputMode;
+            PC->SetInputMode(InputMode);
+            PC->bShowMouseCursor = false;
+            
+            bIsInventoryOpen = false;
+        }
+    }
 }

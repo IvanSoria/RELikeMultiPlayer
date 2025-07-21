@@ -8,6 +8,8 @@ public class RELikeMultiPlayer : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "OnlineSubsystemSteam", "OnlineSubsystem" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "OnlineSubsystemSteam", "OnlineSubsystem", "UMG", "Slate", "SlateCore" });
+
+		PublicIncludePaths.AddRange(new string[] { "RELikeMultiPlayer/Core", "RELikeMultiPlayer/Player", "RELikeMultiPlayer/Components", "RELikeMultiPlayer/Items","RELikeMultiPlayer/AI", "RELikeMultiPlayer/UI"});
 	}
 }

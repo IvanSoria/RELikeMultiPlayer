@@ -15,8 +15,7 @@ class ARELikeMultiPlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-public:	
-
+private:
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
@@ -25,6 +24,23 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+	/** Inventory Component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class UInventoryComponent* InventoryComponent;
+
+	/** Health Component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class UHealthComponent* HealthComponent;
+
+	/** Stamina Component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class UStaminaComponent* StaminaComponent;
+
+	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input, meta = (AllowPrivateAccess = "true"))
+	float TurnRateGamepad;
+
+protected:
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
@@ -45,31 +61,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CrouchAction;
 
+	/** Sprint Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* SprintAction;
+
+	/** Open Inventory Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* OpenInventoryAction;
+
 	/** CrouchEyeOffset */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Crouch, meta = (AllowPrivateAccess = "true"))
 	FVector CrouchEyeOffset;
 
-	/** CrouchEyeOffset */
+	/** CrouchSpeed */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Crouch, meta = (AllowPrivateAccess = "true"))
 	float CrouchSpeed;
-
-	virtual void Tick(float DeltaTime) override;
-
-	// Function to hide the player
-    UFUNCTION(BlueprintCallable, Category="Player")
-    void HidePlayer();
-
-    // Function to show the player
-    UFUNCTION(BlueprintCallable, Category="Player")
-    void ShowPlayer();
-
-	ARELikeMultiPlayerCharacter();
-
-	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
-	float TurnRateGamepad;
-
-protected:
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -77,24 +83,63 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	//** called for crunch start */
+	/** Called for crouch start */
 	void CrouchStart();
 
-	//** called for crunch end */
+	/** Called for crouch end */
 	void CrouchEnd();
 
-protected:
+	/** Called for sprint start */
+	void SprintStart();
+
+	/** Called for sprint end */
+    void SprintEnd();
+
+	/** Called for open inventory */
+    void OpenInventory();
+
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// To add mapping context
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+    TSubclassOf<class UUserWidget> InventoryWidgetClass;
+
+    UPROPERTY()
+    class UUserWidget* InventoryWidget;
+
+    bool bIsInventoryOpen = false;
+
 public:
+	/** Constructor */
+	ARELikeMultiPlayerCharacter();
+
+	/** Tick function */
+	virtual void Tick(float DeltaTime) override;
+
+	/** Function to hide the player */
+    UFUNCTION(BlueprintCallable, Category="Player")
+    void HidePlayer();
+
+    /** Function to show the player */
+    UFUNCTION(BlueprintCallable, Category="Player")
+    void ShowPlayer();
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	
+	/** Returns InventoryComponent subobject **/
+	FORCEINLINE class UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 
+	/** Returns HealthComponent subobject **/
+	FORCEINLINE class UHealthComponent* GetHealthComponent() const { return HealthComponent; }
+
+	/** Returns StaminaComponent subobject **/
+	FORCEINLINE class UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
 };
 
