@@ -1,0 +1,35 @@
+Begin Object Class=/Script/Engine.AnimMontage Name="AM_Crouch_2F_Turn_L90_RM_Montage" ExportPath=/Script/Engine.AnimMontage'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AM_Crouch_2F_Turn_L90_RM_Montage.AM_Crouch_2F_Turn_L90_RM_Montage"'
+   Begin Object Class=/Script/MotionWarping.AnimNotifyState_MotionWarping Name="AnimNotifyState_MotionWarping_0" ExportPath=/Script/MotionWarping.AnimNotifyState_MotionWarping'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AM_Crouch_2F_Turn_L90_RM_Montage.AM_Crouch_2F_Turn_L90_RM_Montage:AnimNotifyState_MotionWarping_0"'
+      Begin Object Class=/Script/MotionWarping.RootMotionModifier_SkewWarp Name="RootMotionModifier_SkewWarp_0" ExportPath=/Script/MotionWarping.RootMotionModifier_SkewWarp'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AM_Crouch_2F_Turn_L90_RM_Montage.AM_Crouch_2F_Turn_L90_RM_Montage:AnimNotifyState_MotionWarping_0.RootMotionModifier_SkewWarp_0"'
+      End Object
+   End Object
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfo Name="SceneThumbnailInfo_0" ExportPath=/Script/UnrealEd.SceneThumbnailInfo'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AM_Crouch_2F_Turn_L90_RM_Montage.AM_Crouch_2F_Turn_L90_RM_Montage:SceneThumbnailInfo_0"'
+   End Object
+   Begin Object Class=/Script/Engine.AnimDataModel Name="AnimDataModel" ExportPath=/Script/Engine.AnimDataModel'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AM_Crouch_2F_Turn_L90_RM_Montage.AM_Crouch_2F_Turn_L90_RM_Montage:AnimDataModel"'
+   End Object
+   Begin Object Name="AnimNotifyState_MotionWarping_0" ExportPath=/Script/MotionWarping.AnimNotifyState_MotionWarping'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AM_Crouch_2F_Turn_L90_RM_Montage.AM_Crouch_2F_Turn_L90_RM_Montage:AnimNotifyState_MotionWarping_0"'
+      Begin Object Name="RootMotionModifier_SkewWarp_0" ExportPath=/Script/MotionWarping.RootMotionModifier_SkewWarp'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AM_Crouch_2F_Turn_L90_RM_Montage.AM_Crouch_2F_Turn_L90_RM_Montage:AnimNotifyState_MotionWarping_0.RootMotionModifier_SkewWarp_0"'
+         WarpTargetName="Turn"
+         bWarpTranslation=False
+      End Object
+      RootMotionModifier=/Script/MotionWarping.RootMotionModifier_SkewWarp'"RootMotionModifier_SkewWarp_0"'
+   End Object
+   Begin Object Name="SceneThumbnailInfo_0" ExportPath=/Script/UnrealEd.SceneThumbnailInfo'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AM_Crouch_2F_Turn_L90_RM_Montage.AM_Crouch_2F_Turn_L90_RM_Montage:SceneThumbnailInfo_0"'
+   End Object
+   Begin Object Name="AnimDataModel" ExportPath=/Script/Engine.AnimDataModel'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AM_Crouch_2F_Turn_L90_RM_Montage.AM_Crouch_2F_Turn_L90_RM_Montage:AnimDataModel"'
+      FrameRate=(Numerator=100000)
+      NumberOfFrames=133333
+      NumberOfKeys=133334
+      bPopulated=True
+   End Object
+   BlendIn=(BlendTime=0.300000,BlendOption=Cubic)
+   BlendOut=(BlendTime=0.500000,BlendOption=Cubic)
+   CompositeSections(0)=(SectionName="Default",LinkedMontage=/Script/Engine.AnimMontage'"AM_Crouch_2F_Turn_L90_RM_Montage"',SegmentIndex=0,SegmentLength=1.333333,LinkedSequence=/Script/Engine.AnimSequence'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AS_Crouch_2F_Turn_L90_RM.AS_Crouch_2F_Turn_L90_RM"')
+   SlotAnimTracks(0)=(SlotName="Turn",AnimTrack=(AnimSegments=((AnimReference=/Script/Engine.AnimSequence'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AS_Crouch_2F_Turn_L90_RM.AS_Crouch_2F_Turn_L90_RM"',AnimEndTime=1.333333))))
+   Notifies(0)=(NotifyName="MotionWarping",NotifyStateClass=/Script/MotionWarping.AnimNotifyState_MotionWarping'"AnimNotifyState_MotionWarping_0"',Duration=0.859536,EndLink=(LinkedMontage=/Script/Engine.AnimMontage'"AM_Crouch_2F_Turn_L90_RM_Montage"',SegmentIndex=0,SegmentLength=1.333333,LinkValue=1.094111,LinkedSequence=/Script/Engine.AnimSequence'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AS_Crouch_2F_Turn_L90_RM.AS_Crouch_2F_Turn_L90_RM"'),Guid=CA36049744B99E88028E3086C753762C,LinkedMontage=/Script/Engine.AnimMontage'"AM_Crouch_2F_Turn_L90_RM_Montage"',SegmentIndex=0,SegmentLength=1.333333,LinkValue=0.234574,LinkedSequence=/Script/Engine.AnimSequence'"/Game/SimpleCrouchAnims/Animations/2Feet/Turn/AS_Crouch_2F_Turn_L90_RM.AS_Crouch_2F_Turn_L90_RM"')
+   SequenceLength=1.333330
+   AnimNotifyTracks(0)=(TrackName="1",TrackColor=(R=0.500000,G=0.500000,B=0.500000,A=1.000000))
+   DataModelInterface=AnimDataModel'AM_Crouch_2F_Turn_L90_RM_Montage:AnimDataModel'
+   Skeleton=/Script/Engine.Skeleton'"/Game/SimpleCrouchAnims/DemoContent/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin"'
+   ThumbnailInfo=/Script/UnrealEd.SceneThumbnailInfo'"SceneThumbnailInfo_0"'
+End Object

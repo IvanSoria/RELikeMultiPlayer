@@ -1,0 +1,33 @@
+# UE5 .gitattributes without LFS
+# Ensure text files use LF line endings
+*.cpp text eol=lf
+*.h text eol=lf
+*.cs text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.ini text eol=lf
+*.json text eol=lf
+*.uproject text eol=lf
+
+# Binary files (marked as binary but not using LFS)
+*.uasset binary
+*.umap binary
+*.blend binary
+*.fbx binary
+*.3ds binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.hdr binary
+*.exr binary
+*.mp3 binary
+*.mp4 binary
+*.mov binary
+*.wav binary
+*.psd binary
+*.mb binary
+*.tga binary
+*.cubemap binary
+*.tif binary
+*.bin binary
+*.upk binary
