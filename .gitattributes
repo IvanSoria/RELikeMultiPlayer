@@ -8,12 +8,11 @@
 *.ini text eol=lf
 *.json text eol=lf
 *.uproject text eol=lf
-
 # Binary files (marked as binary but not using LFS)
-*.uasset binary
-*.umap binary
+*.uasset filter=lfs diff=lfs merge=lfs -text
+*.umap filter=lfs diff=lfs merge=lfs -text
 *.blend binary
-*.fbx binary
+*.fbx filter=lfs diff=lfs merge=lfs -text
 *.3ds binary
 *.png binary
 *.jpg binary
