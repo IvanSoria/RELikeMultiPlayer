@@ -70,7 +70,6 @@ public:
 	UFUNCTION()
 	void OnJoinSessionComplete(FJoinSessionResultWrapper JoinSessionResult);
 
-
 protected:
 	virtual bool Initialize() override;
 

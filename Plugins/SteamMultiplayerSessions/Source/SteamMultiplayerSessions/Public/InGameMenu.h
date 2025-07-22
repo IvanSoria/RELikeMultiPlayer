@@ -18,11 +18,10 @@ class STEAMMULTIPLAYERSESSIONS_API UInGameMenu : public UMenuWidget
 	GENERATED_BODY()
 	
 public:
-
-	void InGameMenu(const FObjectInitializer& ObjectInitializer);
+	UInGameMenu(const FObjectInitializer& ObjectInitializer);
 
 protected:
-	virtual bool Initialize();
+	virtual bool Initialize() override;
 
 private:
 	UPROPERTY(meta = (BindWidget))

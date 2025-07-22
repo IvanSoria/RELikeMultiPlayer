@@ -63,6 +63,9 @@ void UMultiplayerSessionsSubsystem::LoadMenuWidget(UUserWidget *MenuWidget)
 	if (!ensure(WidgetToLoad != nullptr))
 		return;
 
+	// Hide player HUD when showing menu
+	HidePlayerHUD();
+
 	if (WidgetToLoad->IsA(UMainMenu::StaticClass()))
 	{
 
@@ -110,6 +113,8 @@ void UMultiplayerSessionsSubsystem::Join(uint32 Index)
 		{
 			// cast WidgetToLoad to UMainMenu
 			Cast<UMainMenu>(WidgetToLoad)->Teardown();
+			// Show HUD when leaving menu
+			ShowPlayerHUD();
 		}
 		else
 		{
@@ -218,7 +223,8 @@ void UMultiplayerSessionsSubsystem::RefreshServerList()
 	{
 		// SessionSearch->bIsLanQuery = true;
 		LastSessionSearch->MaxSearchResults = 10000;
-		LastSessionSearch->QuerySettings.Set(SEARCH_KEYWORDS, true, EOnlineComparisonOp::Equals);
+		// Use SEARCH_LOBBIES to match what we set in CreateSession
+		LastSessionSearch->QuerySettings.Set(SEARCH_LOBBIES, true, EOnlineComparisonOp::Equals);
 		UE_LOG(LogTemp, Warning, TEXT("Starting Find Session"));
 		FindSessions();
 		// SessionInterface->FindSessions(0, LastSessionSearch.ToSharedRef());
@@ -390,10 +396,74 @@ void UMultiplayerSessionsSubsystem::FailedJoinSessionCleanUp()
 
 void UMultiplayerSessionsSubsystem::DestroySession()
 {
+	// check if the session interface is valid
+	if (!ensure(SessionInterface.IsValid()))
+		return;
+
+	// bind delegate for destroying session
+	DestroySessionCompleteDelegateHandle = SessionInterface->AddOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegate);
+
+	// destroy the session
+	if (!SessionInterface->DestroySession(NAME_GameSession))
+	{
+		// if destroy fails, remove the delegate
+		SessionInterface->ClearOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegateHandle);
+
+		// add debug message to screen "Session Destroy Failed"
+		GEngine->AddOnScreenDebugMessage(
+			11,
+			15.f,
+			FColor::Red,
+			FString::Printf(TEXT("Session Destroy Failed")));
+
+		// broadcast our own custom delegate
+		MultiplayerOnDestroySessionComplete.Broadcast(false);
+	}
+	else
+	{
+		// add debug message to screen "Destroying Session..."
+		GEngine->AddOnScreenDebugMessage(
+			11,
+			15.f,
+			FColor::Yellow,
+			FString::Printf(TEXT("Destroying Session...")));
+	}
 }
 
 void UMultiplayerSessionsSubsystem::StartSession()
 {
+	// check if the session interface is valid
+	if (!ensure(SessionInterface.IsValid()))
+		return;
+
+	// bind delegate for starting session
+	StartSessionCompleteDelegateHandle = SessionInterface->AddOnStartSessionCompleteDelegate_Handle(StartSessionCompleteDelegate);
+
+	// start the session
+	if (!SessionInterface->StartSession(NAME_GameSession))
+	{
+		// if start fails, remove the delegate
+		SessionInterface->ClearOnStartSessionCompleteDelegate_Handle(StartSessionCompleteDelegateHandle);
+
+		// add debug message to screen "Session Start Failed"
+		GEngine->AddOnScreenDebugMessage(
+			12,
+			15.f,
+			FColor::Red,
+			FString::Printf(TEXT("Session Start Failed")));
+
+		// broadcast our own custom delegate
+		MultiplayerOnStartSessionComplete.Broadcast(false);
+	}
+	else
+	{
+		// add debug message to screen "Starting Session..."
+		GEngine->AddOnScreenDebugMessage(
+			12,
+			15.f,
+			FColor::Yellow,
+			FString::Printf(TEXT("Starting Session...")));
+	}
 }
 
 EOnJoinSessionCompleteResultWrapper UMultiplayerSessionsSubsystem::ConvertEOnJoinSessionCompleteResultToWrapper(EOnJoinSessionCompleteResult::Type Result)
@@ -443,11 +513,15 @@ void UMultiplayerSessionsSubsystem::OnCreateSessionComplete(FName SessionName, b
 		{
 			// cast WidgetToLoad to UMainMenu
 			Cast<UMainMenu>(WidgetToLoad)->Teardown();
+			// Show HUD when leaving menu
+			ShowPlayerHUD();
 		}
 		else if (WidgetToLoad->IsA(UInGameMenu::StaticClass()))
 		{
 			// cast WidgetToLoad to UInGameMenu
 			Cast<UInGameMenu>(WidgetToLoad)->Teardown();
+			// Show HUD when leaving menu
+			ShowPlayerHUD();
 		}
 		else
 		{
@@ -569,21 +643,132 @@ void UMultiplayerSessionsSubsystem::OnJoinSessionComplete(FName SessionName, EOn
 			15.f,
 			FColor::Red,
 			FString::Printf(TEXT("Could not retrieve Address")));
+
+		// Set address as empty and mark as failed
+		JoinSessionResultWrapper.Address = FString();
+		JoinSessionResultWrapper.Result = EOnJoinSessionCompleteResultWrapper::CouldNotRetrieveAddress;
+	}
+	else
+	{
+		JoinSessionResultWrapper.Address = Address;
+		JoinSessionResultWrapper.Result = ConvertEOnJoinSessionCompleteResultToWrapper(Result);
+
+		// If join was successful, travel to the session
+		if (Result == EOnJoinSessionCompleteResult::Success)
+		{
+			// Get the world and player controller to initiate client travel
+			UWorld* World = GetWorld();
+			if (World)
+			{
+				APlayerController* PlayerController = World->GetFirstPlayerController();
+				if (PlayerController)
+				{
+					// Travel to the joined session
+					PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
+					
+					// add debug message to screen "Traveling to session"
+					GEngine->AddOnScreenDebugMessage(
+						13,
+						15.f,
+						FColor::Green,
+						FString::Printf(TEXT("Traveling to session: %s"), *Address));
+				}
+				else
+				{
+					// add debug message to screen "PlayerController not found"
+					GEngine->AddOnScreenDebugMessage(
+						13,
+						15.f,
+						FColor::Red,
+						FString::Printf(TEXT("PlayerController not found")));
+				}
+			}
+			else
+			{
+				// add debug message to screen "World not found"
+				GEngine->AddOnScreenDebugMessage(
+					13,
+					15.f,
+					FColor::Red,
+					FString::Printf(TEXT("World not found")));
+			}
+		}
 	}
 
-	JoinSessionResultWrapper.Address = Address;
-
 	// broadcast our own custom delegate
-	JoinSessionResultWrapper.Result = ConvertEOnJoinSessionCompleteResultToWrapper(Result);
 	MultiplayerOnJoinSessionComplete.Broadcast(JoinSessionResultWrapper);
 }
 
 void UMultiplayerSessionsSubsystem::OnDestroySessionComplete(FName SessionName, bool bWasSuccessful)
 {
+	// check if the session interface is valid
+	if (!ensure(SessionInterface.IsValid()))
+		return;
+
+	// remove the delegate
+	SessionInterface->ClearOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegateHandle);
+
+	// broadcast our own custom delegate
+	MultiplayerOnDestroySessionComplete.Broadcast(bWasSuccessful);
+
+	if (!ensure(GEngine != nullptr))
+		return;
+
+	if (bWasSuccessful)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			14,
+			15.f,
+			FColor::Blue,
+			FString::Printf(TEXT("Session Destroyed: %s"), *SessionName.ToString()));
+
+		// If we have a desired server name, create a new session
+		if (!DesiredServerName.IsEmpty())
+		{
+			CreateSession();
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(
+			14,
+			15.f,
+			FColor::Red,
+			FString::Printf(TEXT("Session Destroy Failed: %s"), *SessionName.ToString()));
+	}
 }
 
 void UMultiplayerSessionsSubsystem::OnStartSessionComplete(FName SessionName, bool bWasSuccessful)
 {
+	// check if the session interface is valid
+	if (!ensure(SessionInterface.IsValid()))
+		return;
+
+	// remove the delegate
+	SessionInterface->ClearOnStartSessionCompleteDelegate_Handle(StartSessionCompleteDelegateHandle);
+
+	// broadcast our own custom delegate
+	MultiplayerOnStartSessionComplete.Broadcast(bWasSuccessful);
+
+	if (!ensure(GEngine != nullptr))
+		return;
+
+	if (bWasSuccessful)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			15,
+			15.f,
+			FColor::Blue,
+			FString::Printf(TEXT("Session Started: %s"), *SessionName.ToString()));
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(
+			15,
+			15.f,
+			FColor::Red,
+			FString::Printf(TEXT("Session Start Failed: %s"), *SessionName.ToString()));
+	}
 }
 
 /**Work in progress */
@@ -654,5 +839,39 @@ void UMultiplayerSessionsSubsystem::HostWrapper(const TArray<FString> &Args)
 			15.f,
 			FColor::Red,
 			FString::Printf(TEXT("Please enter a server name")));
+	}
+}
+
+void UMultiplayerSessionsSubsystem::HidePlayerHUD()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		APlayerController* PlayerController = World->GetFirstPlayerController();
+		if (PlayerController && PlayerController->GetPawn())
+		{
+			// Use reflection to call HidePlayerHUD if the function exists
+			if (UFunction* HideHUDFunction = PlayerController->GetPawn()->GetClass()->FindFunctionByName(TEXT("HidePlayerHUD")))
+			{
+				PlayerController->GetPawn()->ProcessEvent(HideHUDFunction, nullptr);
+			}
+		}
+	}
+}
+
+void UMultiplayerSessionsSubsystem::ShowPlayerHUD()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		APlayerController* PlayerController = World->GetFirstPlayerController();
+		if (PlayerController && PlayerController->GetPawn())
+		{
+			// Use reflection to call ShowPlayerHUD if the function exists
+			if (UFunction* ShowHUDFunction = PlayerController->GetPawn()->GetClass()->FindFunctionByName(TEXT("ShowPlayerHUD")))
+			{
+				PlayerController->GetPawn()->ProcessEvent(ShowHUDFunction, nullptr);
+			}
+		}
 	}
 }

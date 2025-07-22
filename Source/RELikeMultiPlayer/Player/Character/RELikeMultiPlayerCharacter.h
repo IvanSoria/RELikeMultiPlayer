@@ -145,6 +145,16 @@ public:
     UFUNCTION(BlueprintCallable, Category="Player")
     void ShowPlayer();
 
+	/** Functions to control HUD visibility */
+	UFUNCTION(BlueprintCallable, Category="HUD")
+	void ShowPlayerHUD();
+
+	UFUNCTION(BlueprintCallable, Category="HUD")
+	void HidePlayerHUD();
+
+	UFUNCTION(BlueprintCallable, Category="HUD")
+	bool IsPlayerHUDVisible() const;
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	

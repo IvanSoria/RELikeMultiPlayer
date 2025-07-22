@@ -121,3 +121,20 @@ void UPlayerHUDWidget::UpdateStamina(float StaminaPercent)
         }
     }
 }
+
+void UPlayerHUDWidget::ShowHUD()
+{
+    SetVisibility(ESlateVisibility::Visible);
+    bIsHUDVisible = true;
+}
+
+void UPlayerHUDWidget::HideHUD()
+{
+    SetVisibility(ESlateVisibility::Collapsed);
+    bIsHUDVisible = false;
+}
+
+bool UPlayerHUDWidget::IsHUDVisible() const
+{
+    return bIsHUDVisible;
+}

@@ -4,17 +4,16 @@
 #include "InGameMenu.h"
 #include "MainMenu.h"
 #include "Components/Button.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Blueprint/UserWidget.h"
 
-
-void UInGameMenu::InGameMenu(const FObjectInitializer& ObjectInitializer)
+UInGameMenu::UInGameMenu(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	ConstructorHelpers::FClassFinder<UUserWidget> MenuBPClass(TEXT("/SteamMultiplayerSessions/Widgets/WIG_MainMenu"));
 
 	if (!ensure(MenuBPClass.Class != nullptr)) return;
 
 	MainMenuClass = MenuBPClass.Class;
-
-	MainMenu = CreateWidget<UMainMenu>(this, MainMenuClass);
 }
 
 bool UInGameMenu::Initialize()
@@ -22,8 +21,11 @@ bool UInGameMenu::Initialize()
 	bool Success = Super::Initialize();
 	if (!Success) return false;
 
-
-	if (!ensure(MainMenu != nullptr)) return false;
+	// Create MainMenu widget if we have a class and don't already have one
+	if (MainMenuClass && !MainMenu)
+	{
+		MainMenu = CreateWidget<UMainMenu>(this, MainMenuClass);
+	}
 
 	if (!ensure(CancelButton != nullptr)) return false;
 	CancelButton->OnClicked.AddDynamic(this, &UInGameMenu::CancelPressed);
@@ -38,7 +40,6 @@ void UInGameMenu::CancelPressed()
 {
 	Teardown();
 }
-
 
 void UInGameMenu::QuitPressed()
 {

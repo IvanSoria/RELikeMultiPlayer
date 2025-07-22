@@ -257,6 +257,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RefreshServerList() override;
 
+	/**
+	 * HUD management functions
+	 */
+	UFUNCTION(BlueprintCallable)
+	void HidePlayerHUD();
+
+	UFUNCTION(BlueprintCallable)
+	void ShowPlayerHUD();
+
 	/*UFUNCTION(BlueprintCallable)
 	void OnRefreshSessionsComplete(bool bWasSuccessful);*/
 

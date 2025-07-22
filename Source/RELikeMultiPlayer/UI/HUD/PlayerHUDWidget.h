@@ -55,4 +55,18 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "HUD")
     void UpdateStamina(float StaminaPercent);
+
+    // Functions to control HUD visibility
+    UFUNCTION(BlueprintCallable, Category = "HUD")
+    void ShowHUD();
+
+    UFUNCTION(BlueprintCallable, Category = "HUD")
+    void HideHUD();
+
+    UFUNCTION(BlueprintCallable, Category = "HUD")
+    bool IsHUDVisible() const;
+
+private:
+    // Track HUD visibility state
+    bool bIsHUDVisible = true;
 };

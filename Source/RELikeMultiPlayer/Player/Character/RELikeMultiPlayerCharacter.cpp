@@ -420,3 +420,28 @@ void ARELikeMultiPlayerCharacter::OnRep_PlayerState()
     // Client-side possession
     SetupHUD();
 }
+
+void ARELikeMultiPlayerCharacter::ShowPlayerHUD()
+{
+    if (HUDWidget)
+    {
+        HUDWidget->ShowHUD();
+    }
+}
+
+void ARELikeMultiPlayerCharacter::HidePlayerHUD()
+{
+    if (HUDWidget)
+    {
+        HUDWidget->HideHUD();
+    }
+}
+
+bool ARELikeMultiPlayerCharacter::IsPlayerHUDVisible() const
+{
+    if (HUDWidget)
+    {
+        return HUDWidget->IsHUDVisible();
+    }
+    return false;
+}
