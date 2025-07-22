@@ -35,4 +35,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	class ACharacter* Character;
+
+	// Foot IK control
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Foot IK")
+	bool bEnableFootIK;
 };

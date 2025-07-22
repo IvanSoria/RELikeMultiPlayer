@@ -42,6 +42,9 @@ void UMainAnimInstance::UpdateAnimationProperties()
 		if (Character)
 		{
 			bIsCrouched = Character->bIsCrouched;
+			
+			// Disable foot IK when crouching to prevent foot placement conflicts
+			bEnableFootIK = !bIsCrouched;
 		}
 	}
 }

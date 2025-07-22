@@ -45,6 +45,9 @@ ARELikeMultiPlayerCharacter::ARELikeMultiPlayerCharacter() //:
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true; // Allow the player to crouch
 
+	// Crouch settings to fix animation issues
+	GetCharacterMovement()->CrouchedHalfHeight = 60.0f; // Adjust capsule height when crouching
+	GetCharacterMovement()->MaxWalkSpeedCrouched = 200.0f; // Slower movement when crouched
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
