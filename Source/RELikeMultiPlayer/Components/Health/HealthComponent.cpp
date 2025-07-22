@@ -8,17 +8,29 @@ UHealthComponent::UHealthComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
     SetIsReplicatedByDefault(true);
+    
+    // Initialize default values
+    CurrentHealth = MaxHealth;
+    CurrentHealthState = EHealthState::Healthy;
+    bIsDowned = false;
 }
 
 void UHealthComponent::BeginPlay()
 {
     Super::BeginPlay();
     
+    UE_LOG(LogTemp, Warning, TEXT("HealthComponent BeginPlay - Role: %d"), (int32)GetOwnerRole());
+    
     // Only set health on server
     if (GetOwnerRole() == ROLE_Authority)
     {
         CurrentHealth = MaxHealth;
         UpdateHealthState();
+        UE_LOG(LogTemp, Warning, TEXT("HealthComponent: Initialized on Authority - Health: %f"), CurrentHealth);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("HealthComponent: Client initialization - waiting for replication"));
     }
 }
 

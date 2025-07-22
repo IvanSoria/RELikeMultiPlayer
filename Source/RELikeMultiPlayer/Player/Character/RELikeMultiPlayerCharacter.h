@@ -104,12 +104,16 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay() override;
 
+	// Replication setup
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
     TSubclassOf<class UUserWidget> InventoryWidgetClass;
 
     UPROPERTY()
     class UUserWidget* InventoryWidget;
 
+    UPROPERTY(BlueprintReadOnly, Category = "UI")
     bool bIsInventoryOpen = false;
 
 public:

@@ -17,6 +17,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/Widget.h"
+#include "Net/UnrealNetwork.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,25 +67,68 @@ ARELikeMultiPlayerCharacter::ARELikeMultiPlayerCharacter() //:
 
 	// Create inventory component
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	if (InventoryComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InventoryComponent created successfully"));
+	}
 
 	// Create health component
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	if (HealthComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HealthComponent created successfully"));
+	}
 
 	// Create stamina component
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
+	if (StaminaComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("StaminaComponent created successfully"));
+	}
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
 	//OnlineSubsytemPtr =  IOnlineSubsystem::Get(); //initialize the pointer to the online subsystem
+	
+	//set this character to replicate
+	SetReplicates(true);
+	SetReplicateMovement(true);
+	
+	// Ensure components replicate properly
+	if (InventoryComponent)
+	{
+		InventoryComponent->SetIsReplicated(true);
+	}
+	if (HealthComponent)
+	{
+		HealthComponent->SetIsReplicated(true);
+	}
+	if (StaminaComponent)
+	{
+		StaminaComponent->SetIsReplicated(true);
+	}
 
+}
 
+void ARELikeMultiPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	// Note: Components automatically handle their own replication when SetIsReplicatedByDefault(true) is called
+	// This function is needed for any character-specific properties that need replication
 }
 
 void ARELikeMultiPlayerCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	// Debug component initialization
+	UE_LOG(LogTemp, Warning, TEXT("Character BeginPlay: Checking Components"));
+	UE_LOG(LogTemp, Warning, TEXT("HealthComponent: %s"), HealthComponent ? TEXT("Valid") : TEXT("NULL"));
+	UE_LOG(LogTemp, Warning, TEXT("StaminaComponent: %s"), StaminaComponent ? TEXT("Valid") : TEXT("NULL"));
+	UE_LOG(LogTemp, Warning, TEXT("InventoryComponent: %s"), InventoryComponent ? TEXT("Valid") : TEXT("NULL"));
 
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
@@ -93,6 +137,34 @@ void ARELikeMultiPlayerCharacter::BeginPlay()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
+	}	
+
+	// Verify components are created
+	if (!HealthComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("HealthComponent is NULL in BeginPlay!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HealthComponent exists in BeginPlay"));
+	}
+
+	if (!StaminaComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("StaminaComponent is NULL in BeginPlay!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("StaminaComponent exists in BeginPlay"));
+	}
+
+	if (!InventoryComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("InventoryComponent is NULL in BeginPlay!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InventoryComponent exists in BeginPlay"));
 	}
 
 }
@@ -141,7 +213,7 @@ void ARELikeMultiPlayerCharacter::SetupPlayerInputComponent(class UInputComponen
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ARELikeMultiPlayerCharacter::SprintEnd);
 
 		// Open Inventory
-		EnhancedInputComponent->BindAction(OpenInventoryAction, ETriggerEvent::Triggered, this, &ARELikeMultiPlayerCharacter::OpenInventory);
+		EnhancedInputComponent->BindAction(OpenInventoryAction, ETriggerEvent::Started, this, &ARELikeMultiPlayerCharacter::OpenInventory);
 			
 	}
 }
@@ -220,9 +292,15 @@ void ARELikeMultiPlayerCharacter::SprintStart()
 	TObjectPtr<UEngine> myEngine = GEngine;
 	if(!ensure(myEngine != nullptr)) return;
 
-	if(StaminaComponent->CanSprint())
+	// Check if StaminaComponent exists before using it
+	if(StaminaComponent && StaminaComponent->CanSprint())
 	{
 		myEngine->AddOnScreenDebugMessage(14, 5.f, FColor::Green, TEXT("Sprint Start"));
+		StaminaComponent->StartSprinting();
+	}
+	else if(!StaminaComponent)
+	{
+		myEngine->AddOnScreenDebugMessage(14, 5.f, FColor::Red, TEXT("Sprint Start Failed - No Stamina Component"));
 	}
 }
 
@@ -232,9 +310,15 @@ void ARELikeMultiPlayerCharacter::SprintEnd()
 	TObjectPtr<UEngine> myEngine = GEngine;
 	if(!ensure(myEngine != nullptr)) return;
 
-	if(!StaminaComponent->CanSprint())
+	// Check if StaminaComponent exists before using it
+	if(StaminaComponent && !StaminaComponent->CanSprint())
 	{
 		myEngine->AddOnScreenDebugMessage(15, 5.f, FColor::Red, TEXT("Sprint End"));
+		StaminaComponent->StopSprinting();
+	}
+	else if(!StaminaComponent)
+	{
+		myEngine->AddOnScreenDebugMessage(15, 5.f, FColor::Red, TEXT("Sprint End Failed - No Stamina Component"));
 	}
 }
 

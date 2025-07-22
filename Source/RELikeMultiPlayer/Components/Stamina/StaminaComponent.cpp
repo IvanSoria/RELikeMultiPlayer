@@ -8,17 +8,29 @@ UStaminaComponent::UStaminaComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
     SetIsReplicatedByDefault(true);
+    
+    // Initialize default values
+    CurrentStamina = MaxStamina;
+    CurrentStaminaState = EStaminaState::Normal;
+    bCanRegenerate = true;
 }
 
 void UStaminaComponent::BeginPlay()
 {
     Super::BeginPlay();
     
+    UE_LOG(LogTemp, Warning, TEXT("StaminaComponent BeginPlay - Role: %d"), (int32)GetOwnerRole());
+    
     // Initialize stamina on server
     if (GetOwnerRole() == ROLE_Authority)
     {
         CurrentStamina = MaxStamina;
         CurrentStaminaState = EStaminaState::Normal;
+        UE_LOG(LogTemp, Warning, TEXT("StaminaComponent: Initialized on Authority - Stamina: %f"), CurrentStamina);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("StaminaComponent: Client initialization - waiting for replication"));
     }
 }
 
