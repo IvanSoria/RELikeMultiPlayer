@@ -4,6 +4,7 @@
 #include "MainAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
+#include "Components/CapsuleComponent.h"
 
 void UMainAnimInstance::NativeInitializeAnimation()
 {
