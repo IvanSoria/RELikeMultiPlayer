@@ -13,25 +13,46 @@ UStaminaComponent::UStaminaComponent()
     CurrentStamina = MaxStamina;
     CurrentStaminaState = EStaminaState::Normal;
     bCanRegenerate = true;
+    
+    UE_LOG(LogTemp, Log, TEXT("StaminaComponent Constructor: Component created with default replication"));
 }
 
 void UStaminaComponent::BeginPlay()
 {
     Super::BeginPlay();
     
-    	UE_LOG(LogTemp, Log, TEXT("StaminaComponent BeginPlay - Role: %d"), (int32)GetOwnerRole());
+    UE_LOG(LogTemp, Warning, TEXT("=== STAMINA COMPONENT BEGINPLAY START ==="));
+    UE_LOG(LogTemp, Log, TEXT("StaminaComponent BeginPlay - Owner: %s, Role: %s, Replicated: %s"), 
+        GetOwner() ? *GetOwner()->GetName() : TEXT("NULL"),
+        GetOwnerRole() == ROLE_Authority ? TEXT("Authority") : 
+        GetOwnerRole() == ROLE_AutonomousProxy ? TEXT("AutonomousProxy") : 
+        GetOwnerRole() == ROLE_SimulatedProxy ? TEXT("SimulatedProxy") : TEXT("None"),
+        GetIsReplicated() ? TEXT("Yes") : TEXT("No"));
     
     // Initialize stamina on server
     if (GetOwnerRole() == ROLE_Authority)
     {
         CurrentStamina = MaxStamina;
         CurrentStaminaState = EStaminaState::Normal;
-        		UE_LOG(LogTemp, Log, TEXT("StaminaComponent: Initialized on Authority - Stamina: %f"), CurrentStamina);
+        UE_LOG(LogTemp, Log, TEXT("StaminaComponent: Initialized on Authority - Stamina: %f, State: %d"), 
+            CurrentStamina, (int32)CurrentStaminaState);
     }
     else
     {
-        		UE_LOG(LogTemp, Log, TEXT("StaminaComponent: Client initialization - waiting for replication"));
+        UE_LOG(LogTemp, Log, TEXT("StaminaComponent: Client initialization - waiting for replication"));
+        UE_LOG(LogTemp, Log, TEXT("StaminaComponent: Current replicated values - Stamina: %f, State: %d"), 
+            CurrentStamina, (int32)CurrentStaminaState);
     }
+    
+    UE_LOG(LogTemp, Warning, TEXT("=== STAMINA COMPONENT BEGINPLAY END ==="));
+}
+
+void UStaminaComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    UE_LOG(LogTemp, Log, TEXT("StaminaComponent EndPlay - Owner: %s, Reason: %d"), 
+        GetOwner() ? *GetOwner()->GetName() : TEXT("NULL"), (int32)EndPlayReason);
+    
+    Super::EndPlay(EndPlayReason);
 }
 
 void UStaminaComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -57,15 +78,19 @@ void UStaminaComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
     DOREPLIFETIME(UStaminaComponent, CurrentStamina);
     DOREPLIFETIME(UStaminaComponent, CurrentStaminaState);
+    
+    UE_LOG(LogTemp, VeryVerbose, TEXT("StaminaComponent: Replication properties registered"));
 }
 
 void UStaminaComponent::OnRep_Stamina()
 {
+    UE_LOG(LogTemp, Log, TEXT("StaminaComponent OnRep_Stamina: %f"), CurrentStamina);
     OnStaminaChanged.Broadcast(CurrentStamina);
 }
 
 void UStaminaComponent::OnRep_StaminaState()
 {
+    UE_LOG(LogTemp, Log, TEXT("StaminaComponent OnRep_StaminaState: %d"), (int32)CurrentStaminaState);
     OnStaminaStateChanged.Broadcast(CurrentStaminaState);
     
     if (CurrentStaminaState == EStaminaState::Exhausted)

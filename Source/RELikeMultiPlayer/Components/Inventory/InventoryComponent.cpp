@@ -11,11 +11,21 @@ UInventoryComponent::UInventoryComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
     SetIsReplicatedByDefault(true);
+    
+    UE_LOG(LogTemp, Log, TEXT("InventoryComponent Constructor: Component created with default replication"));
 }
 
 void UInventoryComponent::BeginPlay()
 {
     Super::BeginPlay();
+
+    UE_LOG(LogTemp, Warning, TEXT("=== INVENTORY COMPONENT BEGINPLAY START ==="));
+    UE_LOG(LogTemp, Log, TEXT("InventoryComponent BeginPlay - Owner: %s, Role: %s, Replicated: %s"), 
+        GetOwner() ? *GetOwner()->GetName() : TEXT("NULL"),
+        GetOwnerRole() == ROLE_Authority ? TEXT("Authority") : 
+        GetOwnerRole() == ROLE_AutonomousProxy ? TEXT("AutonomousProxy") : 
+        GetOwnerRole() == ROLE_SimulatedProxy ? TEXT("SimulatedProxy") : TEXT("None"),
+        GetIsReplicated() ? TEXT("Yes") : TEXT("No"));
 
     // Initialize inventory on server
     if (GetOwnerRole() == ROLE_Authority)
@@ -25,7 +35,23 @@ void UInventoryComponent::BeginPlay()
         {
             Inventory[i].SlotIndex = i;
         }
+        UE_LOG(LogTemp, Log, TEXT("InventoryComponent: Initialized on Authority - Slots: %d"), GetTotalSlots());
     }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("InventoryComponent: Client initialization - waiting for replication"));
+        UE_LOG(LogTemp, Log, TEXT("InventoryComponent: Current inventory size: %d"), Inventory.Num());
+    }
+    
+    UE_LOG(LogTemp, Warning, TEXT("=== INVENTORY COMPONENT BEGINPLAY END ==="));
+}
+
+void UInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    UE_LOG(LogTemp, Log, TEXT("InventoryComponent EndPlay - Owner: %s, Reason: %d"), 
+        GetOwner() ? *GetOwner()->GetName() : TEXT("NULL"), (int32)EndPlayReason);
+    
+    Super::EndPlay(EndPlayReason);
 }
 
 void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -33,10 +59,14 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     DOREPLIFETIME(UInventoryComponent, Inventory);
+    
+    UE_LOG(LogTemp, VeryVerbose, TEXT("InventoryComponent: Replication properties registered"));
 }
 
 void UInventoryComponent::OnRep_Inventory()
 {
+    UE_LOG(LogTemp, Log, TEXT("InventoryComponent OnRep_Inventory: %d slots replicated"), Inventory.Num());
+    
     // Update UI for all slots
     for (int32 i = 0; i < Inventory.Num(); i++)
     {
