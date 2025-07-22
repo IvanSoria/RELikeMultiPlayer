@@ -46,8 +46,13 @@ ARELikeMultiPlayerCharacter::ARELikeMultiPlayerCharacter() //:
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true; // Allow the player to crouch
 
 	// Crouch settings to fix animation issues
-	GetCharacterMovement()->CrouchedHalfHeight = 60.0f; // Adjust capsule height when crouching
+	GetCharacterMovement()->CrouchedHalfHeight = 40.0f; // Adjust capsule height when crouching
+	GetCharacterMovement()->bCrouchMaintainsBaseLocation = true; // Add this line
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 200.0f; // Slower movement when crouched
+	// Also set the mesh offset
+	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -90.0f)); // Adjust Z value
+
+	CrouchedEyeHeight = 32.0f;
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them

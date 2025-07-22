@@ -20,31 +20,35 @@ void UMainAnimInstance::NativeInitializeAnimation()
 
 void UMainAnimInstance::UpdateAnimationProperties()
 {
-	if (Pawn == nullptr)
-	{
-		Pawn = TryGetPawnOwner();
-	}
+    if (Pawn == nullptr)
+    {
+        Pawn = TryGetPawnOwner();
+    }
 
-	if (Character == nullptr)
-	{
-		Character = Cast<ACharacter>(Pawn);
-	}
+    if (Character == nullptr)
+    {
+        Character = Cast<ACharacter>(Pawn);
+    }
 
-	if (Pawn)
-	{
-		FVector Speed = Pawn->GetVelocity();
-		FVector LateralSpeed = FVector(Speed.X, Speed.Y, 0.f);
-		MovementSpeed = LateralSpeed.Size();
+    if (Pawn && Character)
+    {
+        FVector Speed = Pawn->GetVelocity();
+        FVector LateralSpeed = FVector(Speed.X, Speed.Y, 0.f);
+        MovementSpeed = LateralSpeed.Size();
 
-		bIsInAir = Pawn->GetMovementComponent()->IsFalling();
-
-		// Track crouch state
-		if (Character)
-		{
-			bIsCrouched = Character->bIsCrouched;
-			
-			// Disable foot IK when crouching to prevent foot placement conflicts
-			bEnableFootIK = !bIsCrouched;
-		}
-	}
+        bIsInAir = Pawn->GetMovementComponent()->IsFalling();
+        bIsCrouched = Character->bIsCrouched;
+        
+        // Debug output
+        if (GEngine)
+        {
+            FString DebugMsg = FString::Printf(
+                TEXT("Crouch: %s, CapsuleHalfHeight: %.2f, Location Z: %.2f"),
+                bIsCrouched ? TEXT("Yes") : TEXT("No"),
+                Character->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
+                Character->GetActorLocation().Z
+            );
+            GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::Yellow, DebugMsg);
+        }
+    }
 }
