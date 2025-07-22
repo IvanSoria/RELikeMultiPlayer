@@ -117,6 +117,9 @@ protected:
 
 	// To add mapping context
 	virtual void BeginPlay() override;
+	
+	// Component lifecycle tracking
+	virtual void PostInitializeComponents() override;
 
 	// Replication setup
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

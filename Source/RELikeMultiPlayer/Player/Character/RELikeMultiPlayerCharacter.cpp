@@ -68,39 +68,44 @@ ARELikeMultiPlayerCharacter::ARELikeMultiPlayerCharacter() //:
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
-
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	UE_LOG(LogTemp, Log, TEXT("Character Constructor: Creating Components"));
+
 	// Create inventory component
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	if (InventoryComponent)
 	{
-		UE_LOG(LogTemp, Log, TEXT("InventoryComponent created successfully"));
+		UE_LOG(LogTemp, Log, TEXT("InventoryComponent created successfully in constructor"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to create InventoryComponent in constructor"));
 	}
 
 	// Create health component
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	if (HealthComponent)
 	{
-		UE_LOG(LogTemp, Log, TEXT("HealthComponent created successfully"));
+		UE_LOG(LogTemp, Log, TEXT("HealthComponent created successfully in constructor"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("HealthComponent is NULL in BeginPlay!"));
+		UE_LOG(LogTemp, Error, TEXT("Failed to create HealthComponent in constructor"));
 	}
 
 	// Create stamina component
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
 	if (StaminaComponent)
 	{
-		UE_LOG(LogTemp, Log, TEXT("StaminaComponent created successfully"));
+		UE_LOG(LogTemp, Log, TEXT("StaminaComponent created successfully in constructor"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("StaminaComponent is NULL in BeginPlay!"));
+		UE_LOG(LogTemp, Error, TEXT("Failed to create StaminaComponent in constructor"));
 	}
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
@@ -112,20 +117,64 @@ ARELikeMultiPlayerCharacter::ARELikeMultiPlayerCharacter() //:
 	SetReplicates(true);
 	SetReplicateMovement(true);
 	
-	// Ensure components replicate properly
-	if (InventoryComponent)
-	{
-		InventoryComponent->SetIsReplicated(true);
-	}
-	if (HealthComponent)
-	{
-		HealthComponent->SetIsReplicated(true);
-	}
-	if (StaminaComponent)
-	{
-		StaminaComponent->SetIsReplicated(true);
-	}
+	// Components automatically replicate with SetIsReplicatedByDefault(true) in their constructors
+	// No need to manually call SetIsReplicated here as it's redundant and can cause issues
+	UE_LOG(LogTemp, Log, TEXT("Character Constructor: Replication setup completed"));
+}
 
+void ARELikeMultiPlayerCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	UE_LOG(LogTemp, Warning, TEXT("=== CHARACTER POST-INITIALIZE COMPONENTS ==="));
+	UE_LOG(LogTemp, Log, TEXT("Character PostInitializeComponents: Role = %s"), 
+		GetLocalRole() == ROLE_Authority ? TEXT("Authority") : 
+		GetLocalRole() == ROLE_AutonomousProxy ? TEXT("AutonomousProxy") : 
+		GetLocalRole() == ROLE_SimulatedProxy ? TEXT("SimulatedProxy") : TEXT("None"));
+	
+	// Validate all components are properly initialized
+	bool bAllComponentsValid = true;
+	
+	if (!HealthComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("✗ HealthComponent is NULL in PostInitializeComponents!"));
+		bAllComponentsValid = false;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("✓ HealthComponent validated in PostInitializeComponents"));
+	}
+	
+	if (!StaminaComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("✗ StaminaComponent is NULL in PostInitializeComponents!"));
+		bAllComponentsValid = false;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("✓ StaminaComponent validated in PostInitializeComponents"));
+	}
+	
+	if (!InventoryComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("✗ InventoryComponent is NULL in PostInitializeComponents!"));
+		bAllComponentsValid = false;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("✓ InventoryComponent validated in PostInitializeComponents"));
+	}
+	
+	if (bAllComponentsValid)
+	{
+		UE_LOG(LogTemp, Log, TEXT("✓ All components successfully initialized"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("✗ Some components failed to initialize!"));
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("=== END POST-INITIALIZE COMPONENTS ==="));
 }
 
 void ARELikeMultiPlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -141,11 +190,47 @@ void ARELikeMultiPlayerCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	// Debug component initialization
-	UE_LOG(LogTemp, Log, TEXT("Character BeginPlay: Checking Components"));
-	UE_LOG(LogTemp, Log, TEXT("HealthComponent: %s"), HealthComponent ? TEXT("Valid") : TEXT("NULL"));
-	UE_LOG(LogTemp, Log, TEXT("StaminaComponent: %s"), StaminaComponent ? TEXT("Valid") : TEXT("NULL"));
-	UE_LOG(LogTemp, Log, TEXT("InventoryComponent: %s"), InventoryComponent ? TEXT("Valid") : TEXT("NULL"));
+	UE_LOG(LogTemp, Warning, TEXT("=== CHARACTER BEGINPLAY START ==="));
+	UE_LOG(LogTemp, Log, TEXT("Character BeginPlay: Owner Role = %s"), 
+		GetLocalRole() == ROLE_Authority ? TEXT("Authority") : 
+		GetLocalRole() == ROLE_AutonomousProxy ? TEXT("AutonomousProxy") : 
+		GetLocalRole() == ROLE_SimulatedProxy ? TEXT("SimulatedProxy") : TEXT("None"));
+
+	// Debug component initialization with detailed checks
+	UE_LOG(LogTemp, Log, TEXT("Character BeginPlay: Verifying Component States"));
+	
+	if (HealthComponent)
+	{
+		UE_LOG(LogTemp, Log, TEXT("✓ HealthComponent: Valid (Role: %s, Replicated: %s)"), 
+			HealthComponent->GetOwnerRole() == ROLE_Authority ? TEXT("Authority") : TEXT("Non-Authority"),
+			HealthComponent->GetIsReplicated() ? TEXT("Yes") : TEXT("No"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("✗ HealthComponent: NULL in BeginPlay!"));
+	}
+
+	if (StaminaComponent)
+	{
+		UE_LOG(LogTemp, Log, TEXT("✓ StaminaComponent: Valid (Role: %s, Replicated: %s)"), 
+			StaminaComponent->GetOwnerRole() == ROLE_Authority ? TEXT("Authority") : TEXT("Non-Authority"),
+			StaminaComponent->GetIsReplicated() ? TEXT("Yes") : TEXT("No"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("✗ StaminaComponent: NULL in BeginPlay!"));
+	}
+
+	if (InventoryComponent)
+	{
+		UE_LOG(LogTemp, Log, TEXT("✓ InventoryComponent: Valid (Role: %s, Replicated: %s)"), 
+			InventoryComponent->GetOwnerRole() == ROLE_Authority ? TEXT("Authority") : TEXT("Non-Authority"),
+			InventoryComponent->GetIsReplicated() ? TEXT("Yes") : TEXT("No"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("✗ InventoryComponent: NULL in BeginPlay!"));
+	}
 
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
@@ -156,37 +241,10 @@ void ARELikeMultiPlayerCharacter::BeginPlay()
 		}
 	}	
 
-	// Verify components are created
-	if (!HealthComponent)
-	{
-		UE_LOG(LogTemp, Error, TEXT("HealthComponent is NULL in BeginPlay!"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("HealthComponent exists in BeginPlay"));
-	}
-
-	if (!StaminaComponent)
-	{
-		UE_LOG(LogTemp, Error, TEXT("StaminaComponent is NULL in BeginPlay!"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("StaminaComponent exists in BeginPlay"));
-	}
-
-	if (!InventoryComponent)
-	{
-		UE_LOG(LogTemp, Error, TEXT("InventoryComponent is NULL in BeginPlay!"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("InventoryComponent exists in BeginPlay"));
-	}
-
 	// Set up HUD after components are verified
     SetupHUD();
 
+	UE_LOG(LogTemp, Warning, TEXT("=== CHARACTER BEGINPLAY END ==="));
 }
 
 void ARELikeMultiPlayerCharacter::Tick(float DeltaTime)

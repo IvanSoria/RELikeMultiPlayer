@@ -13,25 +13,46 @@ UHealthComponent::UHealthComponent()
     CurrentHealth = MaxHealth;
     CurrentHealthState = EHealthState::Healthy;
     bIsDowned = false;
+    
+    UE_LOG(LogTemp, Log, TEXT("HealthComponent Constructor: Component created with default replication"));
 }
 
 void UHealthComponent::BeginPlay()
 {
     Super::BeginPlay();
     
-    	UE_LOG(LogTemp, Log, TEXT("HealthComponent BeginPlay - Role: %d"), (int32)GetOwnerRole());
+    UE_LOG(LogTemp, Warning, TEXT("=== HEALTH COMPONENT BEGINPLAY START ==="));
+    UE_LOG(LogTemp, Log, TEXT("HealthComponent BeginPlay - Owner: %s, Role: %s, Replicated: %s"), 
+        GetOwner() ? *GetOwner()->GetName() : TEXT("NULL"),
+        GetOwnerRole() == ROLE_Authority ? TEXT("Authority") : 
+        GetOwnerRole() == ROLE_AutonomousProxy ? TEXT("AutonomousProxy") : 
+        GetOwnerRole() == ROLE_SimulatedProxy ? TEXT("SimulatedProxy") : TEXT("None"),
+        GetIsReplicated() ? TEXT("Yes") : TEXT("No"));
     
     // Only set health on server
     if (GetOwnerRole() == ROLE_Authority)
     {
         CurrentHealth = MaxHealth;
         UpdateHealthState();
-        		UE_LOG(LogTemp, Log, TEXT("HealthComponent: Initialized on Authority - Health: %f"), CurrentHealth);
+        UE_LOG(LogTemp, Log, TEXT("HealthComponent: Initialized on Authority - Health: %f, State: %d"), 
+            CurrentHealth, (int32)CurrentHealthState);
     }
     else
     {
-        		UE_LOG(LogTemp, Log, TEXT("HealthComponent: Client initialization - waiting for replication"));
+        UE_LOG(LogTemp, Log, TEXT("HealthComponent: Client initialization - waiting for replication"));
+        UE_LOG(LogTemp, Log, TEXT("HealthComponent: Current replicated values - Health: %f, State: %d"), 
+            CurrentHealth, (int32)CurrentHealthState);
     }
+    
+    UE_LOG(LogTemp, Warning, TEXT("=== HEALTH COMPONENT BEGINPLAY END ==="));
+}
+
+void UHealthComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    UE_LOG(LogTemp, Log, TEXT("HealthComponent EndPlay - Owner: %s, Reason: %d"), 
+        GetOwner() ? *GetOwner()->GetName() : TEXT("NULL"), (int32)EndPlayReason);
+    
+    Super::EndPlay(EndPlayReason);
 }
 
 void UHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -41,15 +62,19 @@ void UHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
     DOREPLIFETIME(UHealthComponent, CurrentHealth);
     DOREPLIFETIME(UHealthComponent, CurrentHealthState);
     DOREPLIFETIME(UHealthComponent, bIsDowned);
+    
+    UE_LOG(LogTemp, VeryVerbose, TEXT("HealthComponent: Replication properties registered"));
 }
 
 void UHealthComponent::OnRep_Health()
 {
+    UE_LOG(LogTemp, Log, TEXT("HealthComponent OnRep_Health: %f"), CurrentHealth);
     OnHealthChanged.Broadcast(CurrentHealth);
 }
 
 void UHealthComponent::OnRep_HealthState()
 {
+    UE_LOG(LogTemp, Log, TEXT("HealthComponent OnRep_HealthState: %d"), (int32)CurrentHealthState);
     OnHealthStateChanged.Broadcast(CurrentHealthState);
     ApplyHealthStateEffects();
 }
