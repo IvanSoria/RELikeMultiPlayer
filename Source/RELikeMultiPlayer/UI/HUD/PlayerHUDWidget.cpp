@@ -2,7 +2,64 @@
 #include "PlayerHUDWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "../../Player/Character/RELikeMultiPlayerCharacter.h"
+#include "../../Components/Health/HealthComponent.h"
+#include "../../Components/Stamina/StaminaComponent.h"
 
+void UPlayerHUDWidget::NativeDestruct()
+{
+    // Clean up bindings
+    if (HealthComponent)
+    {
+        HealthComponent->OnHealthChanged.RemoveDynamic(this, &UPlayerHUDWidget::OnHealthChanged);
+    }
+    
+    if (StaminaComponent)
+    {
+        StaminaComponent->OnStaminaChanged.RemoveDynamic(this, &UPlayerHUDWidget::OnStaminaChanged);
+    }
+    
+    Super::NativeDestruct();
+}
+
+void UPlayerHUDWidget::SetupPlayerComponents(ARELikeMultiPlayerCharacter* Character)
+{
+    if (!Character) return;
+    
+    // Bind to health component
+    HealthComponent = Character->GetHealthComponent();
+    if (HealthComponent)
+    {
+        HealthComponent->OnHealthChanged.AddDynamic(this, &UPlayerHUDWidget::OnHealthChanged);
+        // Initial update
+        UpdateHealth(HealthComponent->GetHealthPercentage());
+    }
+    
+    // Bind to stamina component
+    StaminaComponent = Character->GetStaminaComponent();
+    if (StaminaComponent)
+    {
+        StaminaComponent->OnStaminaChanged.AddDynamic(this, &UPlayerHUDWidget::OnStaminaChanged);
+        // Initial update
+        UpdateStamina(StaminaComponent->GetStaminaPercentage());
+    }
+}
+
+void UPlayerHUDWidget::OnHealthChanged(float NewHealth)
+{
+    if (HealthComponent)
+    {
+        UpdateHealth(HealthComponent->GetHealthPercentage());
+    }
+}
+
+void UPlayerHUDWidget::OnStaminaChanged(float NewStamina)
+{
+    if (StaminaComponent)
+    {
+        UpdateStamina(StaminaComponent->GetStaminaPercentage());
+    }
+}
 
 void UPlayerHUDWidget::UpdateHealth(float HealthPercent)
 {

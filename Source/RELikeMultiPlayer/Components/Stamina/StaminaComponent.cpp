@@ -19,18 +19,18 @@ void UStaminaComponent::BeginPlay()
 {
     Super::BeginPlay();
     
-    UE_LOG(LogTemp, Warning, TEXT("StaminaComponent BeginPlay - Role: %d"), (int32)GetOwnerRole());
+    	UE_LOG(LogTemp, Log, TEXT("StaminaComponent BeginPlay - Role: %d"), (int32)GetOwnerRole());
     
     // Initialize stamina on server
     if (GetOwnerRole() == ROLE_Authority)
     {
         CurrentStamina = MaxStamina;
         CurrentStaminaState = EStaminaState::Normal;
-        UE_LOG(LogTemp, Warning, TEXT("StaminaComponent: Initialized on Authority - Stamina: %f"), CurrentStamina);
+        		UE_LOG(LogTemp, Log, TEXT("StaminaComponent: Initialized on Authority - Stamina: %f"), CurrentStamina);
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("StaminaComponent: Client initialization - waiting for replication"));
+        		UE_LOG(LogTemp, Log, TEXT("StaminaComponent: Client initialization - waiting for replication"));
     }
 }
 
@@ -173,7 +173,7 @@ void UStaminaComponent::ApplyExhaustionEffects()
     // Visual/Audio feedback
     if (GEngine)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, TEXT("EXHAUSTED! Cannot sprint!"));
+        GEngine->AddOnScreenDebugMessage(-6, 3.0f, FColor::Red, TEXT("EXHAUSTED! Cannot sprint!"));
     }
 }
 

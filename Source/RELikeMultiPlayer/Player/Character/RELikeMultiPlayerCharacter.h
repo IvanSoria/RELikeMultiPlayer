@@ -41,6 +41,20 @@ private:
 	float TurnRateGamepad;
 
 protected:
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+    TSubclassOf<class UPlayerHUDWidget> HUDWidgetClass;
+
+    UPROPERTY()
+    class UPlayerHUDWidget* HUDWidget;
+
+    // Add this function
+    void SetupHUD();
+
+	// Player state replication
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+
+	// HUD function
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;

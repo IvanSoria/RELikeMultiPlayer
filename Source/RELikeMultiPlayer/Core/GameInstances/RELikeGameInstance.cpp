@@ -7,13 +7,13 @@
 URELikeGameInstance::URELikeGameInstance(const FObjectInitializer& ObjectInitializer)
 {
 	//Super::Super(ObjectInitializer);
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance Constructor"));
+	UE_LOG(LogTemp, Log, TEXT("GameInstance Constructor"));
 }
 
 void  URELikeGameInstance::Init() 
 {
 	Super::Init();
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance Init"));
+	UE_LOG(LogTemp, Log, TEXT("GameInstance Init"));
 }
 
 /*void URELikeGameInstance::Host()
@@ -21,7 +21,7 @@ void  URELikeGameInstance::Init()
 	TObjectPtr<UEngine> Engine = GetEngine();
 	if (!ensure(Engine != nullptr)) return;
 
-	Engine->AddOnScreenDebugMessage(0, 2, FColor::Green,TEXT("Hosting"));
+	Engine->AddOnScreenDebugMessage(-11, 2, FColor::Green,TEXT("Hosting"));
 
 	TObjectPtr<UWorld> World = GetWorld();
 	if (!ensure(World != nullptr)) return;
@@ -36,7 +36,7 @@ void URELikeGameInstance::Join(const FString& Address)
 	TObjectPtr<UEngine> Engine = GetEngine();
 	if (!ensure(Engine != nullptr)) return;
 
-	Engine->AddOnScreenDebugMessage(0, 5, FColor::Green, FString::Printf(TEXT("Joining %s"), *Address));
+	Engine->AddOnScreenDebugMessage(-12, 5, FColor::Green, FString::Printf(TEXT("Joining %s"), *Address));
 	
 	TObjectPtr<APlayerController> PlayerController = GetFirstLocalPlayerController();
 	if (!ensure(PlayerController != nullptr)) return;

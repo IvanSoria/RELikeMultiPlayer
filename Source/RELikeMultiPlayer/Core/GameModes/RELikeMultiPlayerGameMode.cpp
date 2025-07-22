@@ -3,7 +3,6 @@
 #include "RELikeMultiPlayerGameMode.h"
 #include "../../Player/Character/RELikeMultiPlayerCharacter.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Kismet/GameplayStatics.h"
 
 ARELikeMultiPlayerGameMode::ARELikeMultiPlayerGameMode()
 {
@@ -13,6 +12,8 @@ ARELikeMultiPlayerGameMode::ARELikeMultiPlayerGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	// No custom HUD class needed - PlayerHUDWidget will be created by PlayerController or Character
 }
 
 void ARELikeMultiPlayerGameMode::BeginPlay()

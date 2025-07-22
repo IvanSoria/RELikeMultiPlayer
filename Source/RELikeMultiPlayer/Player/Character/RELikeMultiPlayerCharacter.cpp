@@ -18,6 +18,7 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/Widget.h"
 #include "Net/UnrealNetwork.h"
+#include "../../UI/HUD/PlayerHUDWidget.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -69,21 +70,29 @@ ARELikeMultiPlayerCharacter::ARELikeMultiPlayerCharacter() //:
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	if (InventoryComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("InventoryComponent created successfully"));
+		UE_LOG(LogTemp, Log, TEXT("InventoryComponent created successfully"));
 	}
 
 	// Create health component
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	if (HealthComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HealthComponent created successfully"));
+		UE_LOG(LogTemp, Log, TEXT("HealthComponent created successfully"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("HealthComponent is NULL in BeginPlay!"));
 	}
 
 	// Create stamina component
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
 	if (StaminaComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("StaminaComponent created successfully"));
+		UE_LOG(LogTemp, Log, TEXT("StaminaComponent created successfully"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("StaminaComponent is NULL in BeginPlay!"));
 	}
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
@@ -125,10 +134,10 @@ void ARELikeMultiPlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	// Debug component initialization
-	UE_LOG(LogTemp, Warning, TEXT("Character BeginPlay: Checking Components"));
-	UE_LOG(LogTemp, Warning, TEXT("HealthComponent: %s"), HealthComponent ? TEXT("Valid") : TEXT("NULL"));
-	UE_LOG(LogTemp, Warning, TEXT("StaminaComponent: %s"), StaminaComponent ? TEXT("Valid") : TEXT("NULL"));
-	UE_LOG(LogTemp, Warning, TEXT("InventoryComponent: %s"), InventoryComponent ? TEXT("Valid") : TEXT("NULL"));
+	UE_LOG(LogTemp, Log, TEXT("Character BeginPlay: Checking Components"));
+	UE_LOG(LogTemp, Log, TEXT("HealthComponent: %s"), HealthComponent ? TEXT("Valid") : TEXT("NULL"));
+	UE_LOG(LogTemp, Log, TEXT("StaminaComponent: %s"), StaminaComponent ? TEXT("Valid") : TEXT("NULL"));
+	UE_LOG(LogTemp, Log, TEXT("InventoryComponent: %s"), InventoryComponent ? TEXT("Valid") : TEXT("NULL"));
 
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
@@ -146,7 +155,7 @@ void ARELikeMultiPlayerCharacter::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HealthComponent exists in BeginPlay"));
+		UE_LOG(LogTemp, Log, TEXT("HealthComponent exists in BeginPlay"));
 	}
 
 	if (!StaminaComponent)
@@ -155,7 +164,7 @@ void ARELikeMultiPlayerCharacter::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("StaminaComponent exists in BeginPlay"));
+		UE_LOG(LogTemp, Log, TEXT("StaminaComponent exists in BeginPlay"));
 	}
 
 	if (!InventoryComponent)
@@ -164,8 +173,11 @@ void ARELikeMultiPlayerCharacter::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("InventoryComponent exists in BeginPlay"));
+		UE_LOG(LogTemp, Log, TEXT("InventoryComponent exists in BeginPlay"));
 	}
+
+	// Set up HUD after components are verified
+    SetupHUD();
 
 }
 
@@ -266,7 +278,7 @@ void ARELikeMultiPlayerCharacter::CrouchStart()
 	TObjectPtr<UEngine> myEngine = GEngine;
 	if (!ensure(myEngine != nullptr)) return;
 
-	myEngine->AddOnScreenDebugMessage(12, 5.f, FColor::Green, TEXT("Enter CrouchStart"));
+	myEngine->AddOnScreenDebugMessage(-10, 5.f, FColor::Green, TEXT("Enter CrouchStart"));
 
 	
 }
@@ -279,7 +291,7 @@ void ARELikeMultiPlayerCharacter::CrouchEnd()
 	TObjectPtr<UEngine> myEngine = GEngine;
 	if(!ensure(myEngine != nullptr)) return;
 
-	myEngine->AddOnScreenDebugMessage(13, 5.f, FColor::Red, TEXT("Enter CrouchEnd"));
+	myEngine->AddOnScreenDebugMessage(-5, 5.f, FColor::Red, TEXT("Enter CrouchEnd"));
 	
 
 
@@ -295,12 +307,12 @@ void ARELikeMultiPlayerCharacter::SprintStart()
 	// Check if StaminaComponent exists before using it
 	if(StaminaComponent && StaminaComponent->CanSprint())
 	{
-		myEngine->AddOnScreenDebugMessage(14, 5.f, FColor::Green, TEXT("Sprint Start"));
+		myEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Sprint Start"));
 		StaminaComponent->StartSprinting();
 	}
 	else if(!StaminaComponent)
 	{
-		myEngine->AddOnScreenDebugMessage(14, 5.f, FColor::Red, TEXT("Sprint Start Failed - No Stamina Component"));
+		myEngine->AddOnScreenDebugMessage(-2, 5.f, FColor::Red, TEXT("Sprint Start Failed - No Stamina Component"));
 	}
 }
 
@@ -311,14 +323,14 @@ void ARELikeMultiPlayerCharacter::SprintEnd()
 	if(!ensure(myEngine != nullptr)) return;
 
 	// Check if StaminaComponent exists before using it
-	if(StaminaComponent && !StaminaComponent->CanSprint())
+	if(StaminaComponent)
 	{
-		myEngine->AddOnScreenDebugMessage(15, 5.f, FColor::Red, TEXT("Sprint End"));
+		myEngine->AddOnScreenDebugMessage(-3, 5.f, FColor::Red, TEXT("Sprint End"));
 		StaminaComponent->StopSprinting();
 	}
-	else if(!StaminaComponent)
+	else
 	{
-		myEngine->AddOnScreenDebugMessage(15, 5.f, FColor::Red, TEXT("Sprint End Failed - No Stamina Component"));
+		myEngine->AddOnScreenDebugMessage(-4, 5.f, FColor::Red, TEXT("Sprint End Failed - No Stamina Component"));
 	}
 }
 
@@ -368,4 +380,43 @@ void ARELikeMultiPlayerCharacter::OpenInventory()
             bIsInventoryOpen = false;
         }
     }
+}
+
+void ARELikeMultiPlayerCharacter::SetupHUD()
+{
+    // Only create HUD for local player
+    if (!IsLocallyControlled()) return;
+    
+    APlayerController* PC = Cast<APlayerController>(Controller);
+    if (!PC) return;
+    
+    // Create HUD widget if we have a class set
+    if (HUDWidgetClass && !HUDWidget)
+    {
+        HUDWidget = CreateWidget<UPlayerHUDWidget>(PC, HUDWidgetClass);
+        if (HUDWidget)
+        {
+            HUDWidget->AddToViewport();
+            HUDWidget->SetupPlayerComponents(this);
+            
+            		UE_LOG(LogTemp, Log, TEXT("HUD Widget created and added to viewport"));
+        }
+    }
+}
+
+// Add these implementations to the cpp file:
+void ARELikeMultiPlayerCharacter::PossessedBy(AController* NewController)
+{
+    Super::PossessedBy(NewController);
+    
+    // Server-side possession
+    SetupHUD();
+}
+
+void ARELikeMultiPlayerCharacter::OnRep_PlayerState()
+{
+    Super::OnRep_PlayerState();
+    
+    // Client-side possession
+    SetupHUD();
 }

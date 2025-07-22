@@ -19,18 +19,18 @@ void UHealthComponent::BeginPlay()
 {
     Super::BeginPlay();
     
-    UE_LOG(LogTemp, Warning, TEXT("HealthComponent BeginPlay - Role: %d"), (int32)GetOwnerRole());
+    	UE_LOG(LogTemp, Log, TEXT("HealthComponent BeginPlay - Role: %d"), (int32)GetOwnerRole());
     
     // Only set health on server
     if (GetOwnerRole() == ROLE_Authority)
     {
         CurrentHealth = MaxHealth;
         UpdateHealthState();
-        UE_LOG(LogTemp, Warning, TEXT("HealthComponent: Initialized on Authority - Health: %f"), CurrentHealth);
+        		UE_LOG(LogTemp, Log, TEXT("HealthComponent: Initialized on Authority - Health: %f"), CurrentHealth);
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("HealthComponent: Client initialization - waiting for replication"));
+        		UE_LOG(LogTemp, Log, TEXT("HealthComponent: Client initialization - waiting for replication"));
     }
 }
 
@@ -152,7 +152,7 @@ void UHealthComponent::TakeDamage(float DamageAmount, AActor* DamageCauser)
 
         if (GEngine)
         {
-            GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, 
+            GEngine->AddOnScreenDebugMessage(-7, 2.0f, FColor::Red, 
                 FString::Printf(TEXT("Damage: %.1f, Health: %.1f"), DamageAmount, CurrentHealth));
         }
     }

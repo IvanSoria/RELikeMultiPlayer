@@ -99,7 +99,7 @@ void AItemPickup::PickupItem(AActor* Picker)
         // Successfully picked up
         if (GEngine)
         {
-            GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, 
+            GEngine->AddOnScreenDebugMessage(-8, 2.0f, FColor::Green, 
                 FString::Printf(TEXT("Picked up %d x %s"), Quantity, *ItemID));
         }
 
@@ -122,7 +122,7 @@ void AItemPickup::PickupItem(AActor* Picker)
         // Inventory full
         if (GEngine)
         {
-            GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, TEXT("Inventory Full!"));
+            GEngine->AddOnScreenDebugMessage(-9, 2.0f, FColor::Red, TEXT("Inventory Full!"));
         }
     }
 }
